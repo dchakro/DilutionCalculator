@@ -7,6 +7,7 @@ A web-based dashboard built with Python and Dash to perform common scientific an
 ## Screenshot
 ![](assets/MolarSolution.png)
 ![](assets/WeightSolution.png)
+![](assets/MakeMolarSolution.png)
 
 -----
 
