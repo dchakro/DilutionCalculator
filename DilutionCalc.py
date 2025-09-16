@@ -19,7 +19,7 @@ MASS_CONC_UNITS = {"mg/ml": 1.0, "ug/ml": 1e-3, "ng/ml": 1e-6}
 # =============================================================================
 molarity_layout = dbc.Card(
     dbc.CardBody([
-        html.H4("Molarity (C1V1 = C2V2)", className="card-title"),
+        html.H4("Dilute by Molarity (C1V1 = C2V2)", className="card-title"),
         html.P("Enter three values to calculate the fourth."),
         dbc.Row([
             # C1 Inputs
@@ -99,64 +99,97 @@ def calculate_molarity(n_clicks, c1, c1u, v1, v1u, c2, c2u, v2, v2u):
 
 
 # =============================================================================
-# CALCULATOR 2: Mass from Volume and Concentration
+# CALCULATOR 2: Prepare Molar Solution
 # =============================================================================
-mass_from_vol_layout = dbc.Card(
+prepare_molar_solution_layout = dbc.Card(
     dbc.CardBody([
-        html.H4("Mass from Volume Calculator", className="card-title"),
-        html.P("Calculates mass from concentration, volume, and molar mass."),
+        html.H4("Prepare Molar Solution", className="card-title"),
+        html.P("Enter any three values to calculate the fourth."),
+        # Row for Concentration
         dbc.Row([
-            dbc.Col(dbc.InputGroup([dbc.InputGroupText("Concentration"), dbc.Input(id="mfv-conc-val", type="number")])),
-            dbc.Col(dcc.Dropdown(id="mfv-conc-unit", options=list(CONC_UNITS.keys()), value="mol/L")),
+            dbc.Col(dbc.InputGroup([dbc.InputGroupText("Concentration"), dbc.Input(id="pms-conc-val", type="number", placeholder="")])),
+            dbc.Col(dcc.Dropdown(id="pms-conc-unit", options=list(CONC_UNITS.keys()), value="mmol/L")),
         ], className="mb-3"),
+        # Row for Volume
         dbc.Row([
-            dbc.Col(dbc.InputGroup([dbc.InputGroupText("Volume"), dbc.Input(id="mfv-vol-val", type="number")])),
-            dbc.Col(dcc.Dropdown(id="mfv-vol-unit", options=list(VOL_UNITS.keys()), value="ml")),
+            dbc.Col(dbc.InputGroup([dbc.InputGroupText("Volume"), dbc.Input(id="pms-vol-val", type="number", placeholder="")])),
+            dbc.Col(dcc.Dropdown(id="pms-vol-unit", options=list(VOL_UNITS.keys()), value="ml")),
         ], className="mb-3"),
+        # Row for Mass
         dbc.Row([
-            dbc.Col(dbc.InputGroup([dbc.InputGroupText("Molar Mass (g/mol)"), dbc.Input(id="mfv-mm-val", type="number")])),
-            dbc.Col(dcc.Dropdown(id="mfv-mass-unit", options=list(MASS_UNITS.keys()), value="mg"), width=4),
+            dbc.Col(dbc.InputGroup([dbc.InputGroupText("Mass"), dbc.Input(id="pms-mass-val", type="number", placeholder="")])),
+            dbc.Col(dcc.Dropdown(id="pms-mass-unit", options=list(MASS_UNITS.keys()), value="mg")),
         ], className="mb-3"),
-        dbc.Button("Calculate", id="btn-calc-mfv", color="primary", n_clicks=0),
-        dbc.Alert(id="mfv-output", color="success", className="mt-3", is_open=False)
+        # Row for Molar Mass
+        dbc.Row([
+            dbc.Col(dbc.InputGroup([dbc.InputGroupText("Molar Mass (g/mol)"), dbc.Input(id="pms-mm-val", type="number", placeholder="")])),
+        ], className="mb-3"),
+        dbc.Button("Calculate", id="btn-calc-pms", color="primary", n_clicks=0),
+        dbc.Alert(id="pms-output", color="success", className="mt-3", is_open=False)
     ])
 )
 
 @callback(
-    Output("mfv-output", "children"),
-    Output("mfv-output", "is_open"),
-    Input("btn-calc-mfv", "n_clicks"),
-    [State("mfv-conc-val", "value"), State("mfv-conc-unit", "value"),
-     State("mfv-vol-val", "value"), State("mfv-vol-unit", "value"),
-     State("mfv-mm-val", "value"), State("mfv-mass-unit", "value")],
+    Output("pms-output", "children"),
+    Output("pms-output", "is_open"),
+    Input("btn-calc-pms", "n_clicks"),
+    [State("pms-conc-val", "value"), State("pms-conc-unit", "value"),
+     State("pms-vol-val", "value"), State("pms-vol-unit", "value"),
+     State("pms-mass-val", "value"), State("pms-mass-unit", "value"),
+     State("pms-mm-val", "value")],
     prevent_initial_call=True
 )
-def calculate_mass_from_volume(n_clicks, conc, conc_u, vol, vol_u, mm, mass_u):
+def calculate_prepare_molar_solution(n_clicks, conc, conc_u, vol, vol_u, mass, mass_u, mm):
     try:
-        # Convert inputs to base units (mol/L, L)
-        conc_base = float(conc) * CONC_UNITS[conc_u]
-        vol_base = float(vol) * VOL_UNITS[vol_u]
-        molar_mass = float(mm)
-
-        # Calculation: moles = conc * vol, then mass = moles * molar_mass
-        mass_base = conc_base * vol_base * molar_mass # Mass in grams
+        inputs = {'conc': conc, 'vol': vol, 'mass': mass, 'mm': mm}
         
-        # Convert final mass to selected unit
-        final_mass = mass_base / MASS_UNITS[mass_u]
+        # Identify which field is empty (the one to solve for)
+        solve_for = [k for k, v in inputs.items() if v is None]
+        if len(solve_for) != 1:
+            return "Error: Please leave exactly one field empty to solve for.", True
+        
+        solve_for = solve_for[0]
 
-        return f"Result: Mass = {final_mass:g} {mass_u}", True
+        # Convert all provided inputs to their base units (mol/L, L, g)
+        conc_base = float(conc) * CONC_UNITS[conc_u] if conc is not None else None
+        vol_base = float(vol) * VOL_UNITS[vol_u] if vol is not None else None
+        mass_base = float(mass) * MASS_UNITS[mass_u] if mass is not None else None
+        mm_base = float(mm) if mm is not None else None # Molar mass is already in its base unit (g/mol)
 
-    except (ValueError, TypeError):
-        return "Error: Please fill in all fields with valid numbers.", True
+        # Perform the calculation based on the empty field
+        if solve_for == 'mass':
+            result = conc_base * vol_base * mm_base
+            final_val = result / MASS_UNITS[mass_u]
+            return f"Result: Mass = {final_val:g} {mass_u}", True
+        
+        elif solve_for == 'conc':
+            result = mass_base / (vol_base * mm_base)
+            final_val = result / CONC_UNITS[conc_u]
+            return f"Result: Concentration = {final_val:g} {conc_u}", True
+            
+        elif solve_for == 'vol':
+            result = mass_base / (conc_base * mm_base)
+            final_val = result / VOL_UNITS[vol_u]
+            return f"Result: Volume = {final_val:g} {vol_u}", True
+
+        elif solve_for == 'mm':
+            result = mass_base / (conc_base * vol_base)
+            # Molar mass result is already in g/mol
+            return f"Result: Molar Mass = {result:g} g/mol", True
+
+    except (ValueError, TypeError, KeyError):
+        return "Error: Ensure all three input fields are valid numbers.", True
     except ZeroDivisionError:
-        return "Error: Cannot divide by zero.", True
-
+        return "Error: Cannot divide by zero. Check your inputs.", True
+    
+    return "", False
+    
 # =============================================================================
 # CALCULATOR 3: Mass Concentration (C1V1 = C2V2)
 # =============================================================================
 mass_conc_layout = dbc.Card(
     dbc.CardBody([
-        html.H4("Mass Concentration (C1V1 = C2V2)", className="card-title"),
+        html.H4("Dilute by concentration", className="card-title"),
         html.P("Enter three values to calculate the fourth. Uses mass/volume units."),
         dbc.Row([
             # C1 Inputs - Note the new 'mc-' prefix for all IDs
@@ -233,9 +266,9 @@ def calculate_mass_conc(n_clicks, c1, c1u, v1, v1u, c2, c2u, v2, v2u):
 # =============================================================================
 # Dictionary to hold our calculators
 CALCULATORS = {
-    "/molarity": {"name": "Molarity (C1V1=C2V2)", "layout": molarity_layout},
-    "/mass-from-volume": {"name": "Mass from Volume", "layout": mass_from_vol_layout},
-    "/mass-concentration": {"name": "Mass Concentration", "layout": mass_conc_layout},
+    "/molarity": {"name": "Dilute Molar Solution", "layout": molarity_layout},
+    "/mass-concentration": {"name": "Dilute solution", "layout": mass_conc_layout},
+    "/prepare-molar-solution": {"name": "Prepare Molar Solution", "layout": prepare_molar_solution_layout}
 }
 
 # --- Sidebar and Main Layout ---
