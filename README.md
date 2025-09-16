@@ -50,19 +50,7 @@ git clone <your-repository-url>
 cd <your-repository-name>
 ```
 
-### 3\. Create a `requirements.txt` File
-
-If you haven't already, create a `requirements.txt` file to lock your project's dependencies. This is a crucial step for making your project reproducible.
-
-```bash
-# Activate your virtual environment first
-source ~/mypython/bin/activate
-
-# Generate the requirements file
-pip freeze > requirements.txt
-```
-
-### 4\. Set Up the Environment
+### ### 3\. Set Up the Environment
 
 Create and activate a Python virtual environment.
 
@@ -74,7 +62,7 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 
-### 5\. Install Dependencies
+### 4\. Install Dependencies
 
 Install all the necessary Python packages from the `requirements.txt` file.
 
@@ -82,7 +70,7 @@ Install all the necessary Python packages from the `requirements.txt` file.
 pip install -r requirements.txt
 ```
 
-### 6\. Configure Environment Variables
+### 5\. Configure Environment Variables
 
 The application uses a `.env` file to manage private paths.
 
@@ -105,7 +93,7 @@ SCRIPT_NAME="calc.py"
 
 -----
 
-## ▶️ Usage
+## How to run
 
 Once the setup is complete, you can run the application using the startup script.
 
