@@ -12,7 +12,7 @@ app.title = "Scientific Calculator Dashboard"
 CONC_UNITS = {"mol/L": 1.0, "mmol/L": 1e-3, "umol/L": 1e-6, "nmol/L": 1e-9}
 VOL_UNITS = {"L": 1.0, "ml": 1e-3, "ul": 1e-6}
 MASS_UNITS = {"g": 1.0, "mg": 1e-3, "ug": 1e-6, "ng": 1e-9}
-
+MASS_CONC_UNITS = {"mg/ml": 1.0, "ug/ml": 1e-3, "ng/ml": 1e-6}
 
 # =============================================================================
 # CALCULATOR 1: Molarity (C1V1 = C2V2)
@@ -151,6 +151,82 @@ def calculate_mass_from_volume(n_clicks, conc, conc_u, vol, vol_u, mm, mass_u):
     except ZeroDivisionError:
         return "Error: Cannot divide by zero.", True
 
+# =============================================================================
+# CALCULATOR 3: Mass Concentration (C1V1 = C2V2)
+# =============================================================================
+mass_conc_layout = dbc.Card(
+    dbc.CardBody([
+        html.H4("Mass Concentration (C1V1 = C2V2)", className="card-title"),
+        html.P("Enter three values to calculate the fourth. Uses mass/volume units."),
+        dbc.Row([
+            # C1 Inputs - Note the new 'mc-' prefix for all IDs
+            dbc.Col(dbc.InputGroup([dbc.InputGroupText("C1"), dbc.Input(id="mc-c1-val", type="number")])),
+            dbc.Col(dcc.Dropdown(id="mc-c1-unit", options=list(MASS_CONC_UNITS.keys()), value="mg/ml")),
+            # V1 Inputs
+            dbc.Col(dbc.InputGroup([dbc.InputGroupText("V1"), dbc.Input(id="mc-v1-val", type="number")])),
+            dbc.Col(dcc.Dropdown(id="mc-v1-unit", options=list(VOL_UNITS.keys()), value="ml")),
+        ], className="mb-3"),
+        dbc.Row([
+            # C2 Inputs
+            dbc.Col(dbc.InputGroup([dbc.InputGroupText("C2"), dbc.Input(id="mc-c2-val", type="number")])),
+            dbc.Col(dcc.Dropdown(id="mc-c2-unit", options=list(MASS_CONC_UNITS.keys()), value="ug/ml")),
+            # V2 Inputs
+            dbc.Col(dbc.InputGroup([dbc.InputGroupText("V2"), dbc.Input(id="mc-v2-val", type="number")])),
+            dbc.Col(dcc.Dropdown(id="mc-v2-unit", options=list(VOL_UNITS.keys()), value="ml")),
+        ], className="mb-3"),
+        dbc.Button("Calculate", id="btn-calc-mc", color="primary", n_clicks=0),
+        dbc.Alert(id="mc-output", color="success", className="mt-3", is_open=False)
+    ])
+)
+
+@callback(
+    Output("mc-output", "children"),
+    Output("mc-output", "is_open"),
+    Input("btn-calc-mc", "n_clicks"),
+    [State("mc-c1-val", "value"), State("mc-c1-unit", "value"),
+     State("mc-v1-val", "value"), State("mc-v1-unit", "value"),
+     State("mc-c2-val", "value"), State("mc-c2-unit", "value"),
+     State("mc-v2-val", "value"), State("mc-v2-unit", "value")],
+    prevent_initial_call=True
+)
+def calculate_mass_conc(n_clicks, c1, c1u, v1, v1u, c2, c2u, v2, v2u):
+    inputs = {'c1': c1, 'v1': v1, 'c2': c2, 'v2': v2}
+    solve_for = [k for k, v in inputs.items() if v is None]
+    if len(solve_for) != 1:
+        return "Error: Please leave exactly one field empty to solve for.", True
+    
+    solve_for = solve_for[0]
+
+    try:
+        # Use the new MASS_CONC_UNITS dictionary for concentrations
+        c1_base = float(c1) * MASS_CONC_UNITS[c1u] if c1 is not None else None
+        v1_base = float(v1) * VOL_UNITS[v1u] if v1 is not None else None
+        c2_base = float(c2) * MASS_CONC_UNITS[c2u] if c2 is not None else None
+        v2_base = float(v2) * VOL_UNITS[v2u] if v2 is not None else None
+
+        if solve_for == 'c2':
+            result = (c1_base * v1_base) / v2_base
+            final_val = result / MASS_CONC_UNITS[c2u]
+            return f"Result: C2 = {final_val:g} {c2u}", True
+        if solve_for == 'v2':
+            result = (c1_base * v1_base) / c2_base
+            final_val = result / VOL_UNITS[v2u]
+            return f"Result: V2 = {final_val:g} {v2u}", True
+        if solve_for == 'c1':
+            result = (c2_base * v2_base) / v1_base
+            final_val = result / MASS_CONC_UNITS[c1u]
+            return f"Result: C1 = {final_val:g} {c1u}", True
+        if solve_for == 'v1':
+            result = (c2_base * v2_base) / c1_base
+            final_val = result / VOL_UNITS[v1u]
+            return f"Result: V1 = {final_val:g} {v1u}", True
+
+    except (ValueError, TypeError):
+        return "Error: Ensure all three input fields are valid numbers.", True
+    except ZeroDivisionError:
+        return "Error: Cannot divide by zero.", True
+    
+    return "", False
 
 # =============================================================================
 # Main App Layout and Callbacks
@@ -159,6 +235,7 @@ def calculate_mass_from_volume(n_clicks, conc, conc_u, vol, vol_u, mm, mass_u):
 CALCULATORS = {
     "/molarity": {"name": "Molarity (C1V1=C2V2)", "layout": molarity_layout},
     "/mass-from-volume": {"name": "Mass from Volume", "layout": mass_from_vol_layout},
+    "/mass-concentration": {"name": "Mass Concentration", "layout": mass_conc_layout},
 }
 
 # --- Sidebar and Main Layout ---
