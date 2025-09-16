@@ -5,8 +5,13 @@ A web-based dashboard built with Python and Dash to perform common scientific an
 -----
 
 ## Screenshot
+Dilute molar solution:
 ![](assets/MolarSolution.png)
+
+Dilute a mass/volume solution:
 ![](assets/WeightSolution.png)
+
+Prepare a molar solution:
 ![](assets/MakeMolarSolution.png)
 
 -----
