@@ -50,7 +50,7 @@ git clone <your-repository-url>
 cd <your-repository-name>
 ```
 
-### ### 3\. Set Up the Environment
+### 3\. Set Up the Environment
 
 Create and activate a Python virtual environment.
 
@@ -88,7 +88,6 @@ Now, edit the `.env` file and add the correct paths for your system.
 # Configuration for the Dash App launcher
 VENV_PATH="~/path/to/your/venv/bin/activate"
 APP_DIR="~/path/to/your/project/directory"
-SCRIPT_NAME="calc.py"
 ```
 
 -----
@@ -100,13 +99,13 @@ Once the setup is complete, you can run the application using the startup script
 First, make the script executable (you only need to do this once):
 
 ```bash
-chmod +x start_app.sh
+chmod +x startCalculator.sh
 ```
 
 Then, run the script:
 
 ```bash
-./start_app.sh
+./startCalculator.sh
 ```
 
 The script will automatically activate the virtual environment, start the Dash server, and open the application in your default browser.
