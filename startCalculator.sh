@@ -43,7 +43,8 @@ URL=$(grep "Dash is running on" server.log | awk '{print $5}')
 
 if [ -n "$URL" ]; then
     echo "Server started successfully. Found URL: $URL"
-    open -a "Google Chrome" "$URL"
+    # open -a "Google Chrome" "$URL"
+     /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --app="$URL"
 else
     echo "Could not find the server URL. Here's the log:"
     cat server.log
