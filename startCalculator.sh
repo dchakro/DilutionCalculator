@@ -13,12 +13,24 @@ else
     exit 1
 fi
 
-# 1. Activate the Python virtual environment
-# 'eval echo' is used to correctly expand the '~' from the .env file
-source $(eval echo $VENV_PATH)
-if [ $? -ne 0 ]; then
-    echo "Error: Failed to activate virtual environment from path: $VENV_PATH"
-    exit 1
+# 1. Ensure the virtual environment exists and is healthy
+VENV_DIR=$(dirname "$(dirname "$(eval echo $VENV_PATH)")")
+REQUIRED_PACKAGES="dash dash-bootstrap-components numpy scipy"
+
+if ! "$VENV_DIR/bin/python3" --version &> /dev/null; then
+    echo "Virtual environment is missing or broken. Recreating..."
+    rm -rf "$VENV_DIR"
+    /opt/homebrew/opt/python3/bin/python3 -m venv "$VENV_DIR"
+    source $(eval echo $VENV_PATH)
+    echo "Installing dependencies..."
+    pip install --quiet $REQUIRED_PACKAGES
+    echo "Virtual environment created and dependencies installed."
+else
+    source $(eval echo $VENV_PATH)
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to activate virtual environment from path: $VENV_PATH"
+        exit 1
+    fi
 fi
 echo "Virtual environment activated."
 
