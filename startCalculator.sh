@@ -32,11 +32,11 @@ echo "Navigated to the project directory."
 
 # 3. Start the Dash app in the background and redirect its output
 echo "Launching the app..."
-python3 DilutionCalc.py &> server.log &
+python3 -u DilutionCalc.py &> server.log &
 SERVER_PID=$!
 
 # 4. Wait a couple of seconds for the server to start up
-sleep 2
+sleep 3
 
 # 5. Extract the URL from the log file and open it
 URL=$(grep "Dash is running on" server.log | awk '{print $5}')
