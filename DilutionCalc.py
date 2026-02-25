@@ -116,7 +116,7 @@ prepare_molar_solution_layout = dbc.Card(
         # Row for Volume
         dbc.Row([
             dbc.Col(dbc.InputGroup([dbc.InputGroupText("Volume"), dbc.Input(id="pms-vol-val", type="number", placeholder="")])),
-            dbc.Col(dcc.Dropdown(id="pms-vol-unit", options=list(VOL_UNITS.keys()), value="ml")),
+            dbc.Col(dcc.Dropdown(id="pms-vol-unit", options=list(VOL_UNITS.keys()), value="ul")),
         ], className="mb-3"),
         # Row for Mass
         dbc.Row([
@@ -200,7 +200,7 @@ mass_conc_layout = dbc.Card(
             dbc.Col(dcc.Dropdown(id="mc-c1-unit", options=list(MASS_CONC_UNITS.keys()), value="mg/ml")),
             # V1 Inputs
             dbc.Col(dbc.InputGroup([dbc.InputGroupText("V1"), dbc.Input(id="mc-v1-val", type="number")])),
-            dbc.Col(dcc.Dropdown(id="mc-v1-unit", options=list(VOL_UNITS.keys()), value="ml")),
+            dbc.Col(dcc.Dropdown(id="mc-v1-unit", options=list(VOL_UNITS.keys()), value="ul")),
         ], className="mb-3"),
         dbc.Row([
             # C2 Inputs
